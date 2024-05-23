@@ -1,5 +1,5 @@
 import { BatchId, PostageBatch } from "@ethersphere/bee-js";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { beeDebug } from "../utils/bee-node";
 
 export interface CreatePostageBatchArgs {
@@ -13,11 +13,19 @@ export function usePostageBatch() {
   const [isErrorCreatePostageBatch, setIsErrorCreatePostageBatch] =
     useState(false);
   const [getAllStampError, setGetAllStampError] = useState(false);
-  const [batchId, setBatchId] = useState<BatchId>();
+  const [newlyCreatedBatchId, setNewlyCreatedBatchId] = useState<BatchId>();
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    // const timeoutId = setTimeout(() => {
+    //   console.log("usePostageStamp timeout");
+    //   setGetAllStampError(!getAllStampError);
+    // }, 3000);
+    // return () => {
+    //   clearTimeout(timeoutId);
+    // };
+  }, []);
 
-  const getAllPostageStamps = async () => {
+  const getAllPostageStamps = useCallback(async () => {
     try {
       setIsLoadingStamps(true);
 
@@ -25,11 +33,12 @@ export function usePostageBatch() {
       setPostageStamps(ps);
 
       setIsLoadingStamps(false);
+      setGetAllStampError(false);
     } catch (err) {
       setIsLoadingStamps(false);
       setGetAllStampError(true);
     }
-  };
+  }, [postageStamps]);
 
   /**
    * This function creates a Postage Stamp Batch
@@ -43,7 +52,7 @@ export function usePostageBatch() {
         args.depth
       );
 
-      setBatchId(resBatchId);
+      setNewlyCreatedBatchId(resBatchId);
       setIsCreatePostageBatch(false);
     } catch (err) {
       console.log(err);
@@ -60,6 +69,6 @@ export function usePostageBatch() {
     createPostageBatch,
     isCreatePostageBatch,
     isErrorCreatePostageBatch,
-    batchId,
+    newlyCreatedBatchId,
   };
 }
