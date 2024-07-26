@@ -1,31 +1,16 @@
-import { Health } from "@ethersphere/bee-js";
-import { useEffect, useState } from "react";
 import "./App.css";
-import { beeDebug } from "./utils/bee-node";
+
+import { Footer } from "./components/Footer";
+import Header from "./components/Header";
+import Main from "./components/Main";
+ 
 
 function App() {
-  const [nodeHealth, setNodeHealth] = useState<Health>();
-
-  useEffect(() => {
-    handleIsNodeOnline();
-  }, []);
-
-  const handleIsNodeOnline = async () => {
-    const health = await beeDebug.getHealth();
-    setNodeHealth(health);
-  };
-
   return (
-    <div>
-      <section className="connection-status">
-        <p>
-          Node status:{" "}
-          <span
-            className={nodeHealth?.status == "ok" ? "online" : "offline"}
-          ></span>
-          {nodeHealth?.status == "ok" ? "Connected" : "Disconnected"}
-        </p>
-      </section>
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      <Main />
+      <Footer />
     </div>
   );
 }
