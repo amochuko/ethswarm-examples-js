@@ -8,8 +8,8 @@ export function useWallet() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    handleCostEstimate;
-  }, [balance]);
+    handleCostEstimate();
+  }, []);
 
   const handleCostEstimate = async () => {
     try {
