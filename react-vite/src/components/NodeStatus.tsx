@@ -1,15 +1,16 @@
-import { useNodeHealth } from "../hooks/useNodeHealth";
+import { Health } from "@ethersphere/bee-js";
 
-export function NodeStatus() {
-  const { nodeHealth } = useNodeHealth();
-
+type NodeStatusProps = {
+  nodeHealth: Health | null | undefined;
+};
+export function NodeStatus(props: NodeStatusProps) {
   return (
     <div className="connection-status">
       <p>
         <span
-          className={nodeHealth?.status == "ok" ? "online" : "offline"}
+          className={props.nodeHealth?.status == "ok" ? "online" : "offline"}
         ></span>
-        {nodeHealth?.status == "ok" ? "Connected" : "Disconnected"}
+        {props.nodeHealth?.status == "ok" ? "Connected" : "Disconnected"}
       </p>
     </div>
   );
