@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { API_URL } from "../constant";
 import { IUpload, useUpload } from "../hooks/useUpload";
 
@@ -10,7 +10,8 @@ export const UploadFile = () => {
     postageBatchId: "",
   });
 
- 
+  const [fileSize, setFileSize] = useState("");
+
   const {
     handleFileUpload,
     uploadResultWithCid,
@@ -19,6 +20,11 @@ export const UploadFile = () => {
     processing,
     tag,
   } = useUpload();
+
+  useEffect(() => {
+    getFileSize();
+    return () => {};
+  }, [uploadData.files]);
 
   const handleOnchange = (e: React.FormEvent<HTMLInputElement>): void => {
     const target = e.currentTarget;
@@ -45,12 +51,32 @@ export const UploadFile = () => {
       return;
     }
 
-    await handleFileUpload({
-      postageBatchId: uploadData.postageBatchId,
-      files: uploadData.files,
-    });
+    return;
+  };
 
-    setLoadData({ files: [], postageBatchId: "" });
+  const getFileSize = () => {
+    // Calculate total size
+    let numberOfBytes = 0;
+
+    for (const file of uploadData.files) {
+      numberOfBytes += file.size;
+    }
+
+    // Approximate to the closest prefixed unit
+    const units = ["B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"];
+    const exponent = Math.min(
+      Math.floor(Math.log(numberOfBytes) / Math.log(1024)),
+      units.length - 1
+    );
+    const approx = numberOfBytes / 1024 ** exponent;
+
+    const size =
+      exponent === 0
+        ? `${numberOfBytes} bytes`
+        : `${approx.toFixed(3)} ${units[exponent]} (${numberOfBytes} bytes)`;
+
+    setFileSize(size);
+    console.log("size: ", size);
   };
 
   return (
@@ -102,6 +128,19 @@ export const UploadFile = () => {
         </button>
       </div>
 
+      {uploadData.files.length > 0 && (
+        <div className="space-y-2 mt-4">
+          <div>
+            <label htmlFor="fileNum">Selected files:</label>
+            <span id="fileNum"> {uploadData.files.length}</span>
+          </div>
+          <div>
+            <label htmlFor="fileSize">Total size:</label>
+            <span id="fileSize"> {fileSize}</span>
+          </div>
+        </div>
+      )}
+
       {error && (
         <>
           <p className="">{error}</p>
@@ -125,6 +164,7 @@ export const UploadFile = () => {
           </p>
         </div>
       )}
+
     </section>
   );
 };
