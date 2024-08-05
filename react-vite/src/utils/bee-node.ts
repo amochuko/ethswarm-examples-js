@@ -1,6 +1,6 @@
 import { Bee } from "@ethersphere/bee-js";
-import { API_URL } from "../constant";
+import { BEE_NODE_URL } from "../constant";
 
-const bee = new Bee(API_URL);
+const bee = new Bee(BEE_NODE_URL);
 
 export { bee };

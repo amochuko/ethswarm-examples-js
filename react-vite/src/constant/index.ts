@@ -1,3 +1,3 @@
-const API_URL = "http://127.0.0.1:1633";
+const BEE_NODE_URL = process.env.BEE_NODE_URL || "http://127.0.0.1:1633";
 
-export { API_URL };
+export { BEE_NODE_URL };
