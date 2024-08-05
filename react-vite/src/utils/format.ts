@@ -15,7 +15,6 @@ export const format = {
           .writeText(txt)
           .then(() => res(true))
           .catch((err) => rej(err));
-        console.log("copied text");
       } else {
         // fallback
         const txtarea = document.createElement("textarea");

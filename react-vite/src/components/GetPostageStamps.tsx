@@ -10,7 +10,6 @@ export function GetPostageStamps() {
 
   const handleViewPostageStamps = () => {
     setShowStamp(!showStamps);
-    console.log("handleView Postage Stamps");
   };
 
   return (
@@ -21,7 +20,7 @@ export function GetPostageStamps() {
         )}
       </section>
       <section>
-        <div className="bg-slate-200">
+        <div className="bg-slate-200 mb-8">
           {postageStamps && postageStamps.length > 0 && (
             <div
               className="flex justify-between mb-1 p-8 hover:cursor-pointer"
@@ -42,7 +41,7 @@ export function GetPostageStamps() {
 
               {postageStamps &&
                 postageStamps.map((ps) => (
-                  <li key={ps.batchID} className="flex flex-col mb-4 space-y-1">
+                  <li key={ps.batchID} className="flex flex-col mb-8 space-y-2 divide-y divide-slate-300 ">
                     <p className="flex justify-between hover:cursor-pointer ">
                       <span className="text-gray-500 font-semibold text-ellipsis">
                         Batch ID:

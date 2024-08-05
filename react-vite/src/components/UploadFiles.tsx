@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { API_URL } from "../constant";
 import { IUpload, useUpload } from "../hooks/useUpload";
+import MultipleUploadResult from "./MultipleUploadResult";
+import SingleUploadResult from "./SingleUploadResult";
 
 type UploadFileState = {} & IUpload;
 
@@ -12,14 +14,13 @@ export const UploadFile = () => {
 
   const [fileSize, setFileSize] = useState("");
   const [isRequired, setIsRequired] = useState(false);
+  const [isMultipleFile, setIsMultipleFile] = useState(false);
 
   const {
     handleFileUpload,
     uploadResultWithCid,
     error,
-    handleUploadProgress,
     processing,
-    tag,
   } = useUpload();
 
   useEffect(() => {
@@ -33,6 +34,7 @@ export const UploadFile = () => {
     const value = target.value;
 
     setIsRequired(false);
+    setIsMultipleFile(false);
 
     if (target.type === "file") {
       setLoadData((preState) => ({
@@ -56,6 +58,7 @@ export const UploadFile = () => {
     }
 
     setIsRequired(false);
+    setIsMultipleFile(uploadData.files.length > 1);
     await handleFileUpload({
       postageBatchId: uploadData.postageBatchId,
       files: uploadData.files,
@@ -102,7 +105,7 @@ export const UploadFile = () => {
               htmlFor="postageBatchId"
               className="text-stone-500 font-bold mb-4"
             >
-              Batch ID:
+              Postage ID:
             </label>
 
             <input
@@ -114,11 +117,10 @@ export const UploadFile = () => {
               name="postageBatchId"
               onChange={handleOnchange}
               disabled={processing}
-              required={isRequired}
             />
             {isRequired && uploadData.postageBatchId === "" && (
               <span className="mt-2 text-red-500">
-                Postage stamp ID is required
+                Please fill in your Postage stamp ID
               </span>
             )}
           </div>
@@ -136,10 +138,11 @@ export const UploadFile = () => {
               name="fileSelected"
               onChange={handleOnchange}
               disabled={processing}
-              required={isRequired}
             />
             {isRequired && uploadData.files.length === 0 && (
-              <span className="mt-2 text-red-500">No file selected</span>
+              <span className="mt-2 text-red-500">
+                Please one or more files
+              </span>
             )}
           </div>
           <button
@@ -151,8 +154,10 @@ export const UploadFile = () => {
           </button>
         </div>
       </form>
+
       {uploadData.files.length > 0 && (
-        <div className="space-y-2 mt-4">
+        <div className="space-y-2 my-6 border-spacing-1 border border-zinc-600 p-8">
+          <h3 className="text-2xl  mb-6">Upload Summary</h3>
           <div>
             <label htmlFor="fileNum">Selected files:</label>
             <span id="fileNum"> {uploadData.files.length}</span>
@@ -166,36 +171,22 @@ export const UploadFile = () => {
 
       {error && (
         <>
-          <p className="">{error}</p>
+          <p className="mt-2 text-red-500">{error}</p>
         </>
       )}
 
-      {uploadResultWithCid && (
-        <div className="flex flex-col space-y-2 bg-slate-200 p-8">
-          <h2 className="text-2xl mb-6">Preview file</h2>
-          <p className="truncate hover:text-clip">
-            <span className="font-semibold">Reference: </span>
-            {uploadResultWithCid.reference}
-          </p>
-          <p className="text-clip overflow-hidden">
-            <span className="font-semibold">Tag UID:</span>{" "}
-            {uploadResultWithCid.tagUid}
-          </p>
-          <p className="text-gray-900 text-clip overflow-hidden">
-            <span className="font-semibold">CID:</span>{" "}
-            {uploadResultWithCid.cid()}
-          </p>
-          <p className="text-gray-900 truncate hover:text-clip">
-            <span className="font-semibold">Link: </span>{" "}
-            <a
-              href={`${API_URL}/bzz/${uploadResultWithCid.reference}/`}
-              target="_blank"
-              referrerPolicy="same-origin"
-            >
-              {`${API_URL}/bzz/${uploadResultWithCid.reference}/`}
-            </a>
-          </p>
-        </div>
+      {!isMultipleFile && uploadResultWithCid?.reference && (
+        <SingleUploadResult
+          link={`${API_URL}/bzz`}
+          uploadResultWithCid={uploadResultWithCid!}
+        />
+      )}
+
+      {isMultipleFile && uploadResultWithCid?.reference && (
+        <MultipleUploadResult
+          link={`${API_URL}/bzz`}
+          uploadResultWithCid={uploadResultWithCid!}
+        />
       )}
     </section>
   );

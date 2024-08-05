@@ -21,16 +21,28 @@ export default function GetBalance(props: NodeStatusProps) {
 
           {!isLoading && !error && (
             <div className="flex flex-col space-y-1">
-              <span>{bzzBalance().toString().substring(0, 6)} xBzz</span>
-              <span>
+              <span className=" font-semibold">
+                {bzzBalance().toString().substring(0, 6)} xBzz
+              </span>
+              <span className=" font-semibold">
                 {nativeTokenBalance().toString().substring(0, 6)} xDai
               </span>
-              <div className="tooltip">
+              <div className=" font-semibold tooltip">
                 {balance?.walletAddress.substring(0, 6)}...
-                {balance?.walletAddress.substring(36)}
-                <span className="tooltip inline-block">
-                  <HandleCopy txt={String(balance?.walletAddress)} />
-                  <span className="tooltip-text">{balance?.walletAddress}</span>
+                {balance?.walletAddress.substring(
+                  balance?.walletAddress.length - 6
+                )}
+                <span className=" font-semibold tooltip inline-block">
+                  <HandleCopy
+                    txt={String(
+                      balance?.walletAddress.substring(
+                        balance?.walletAddress.length - 6
+                      )
+                    )}
+                  />
+                  <span className=" font-semibold tooltip-text">
+                    {balance?.walletAddress}
+                  </span>
                 </span>
               </div>
             </div>

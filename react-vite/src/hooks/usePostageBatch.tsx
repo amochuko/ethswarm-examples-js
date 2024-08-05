@@ -1,42 +1,62 @@
-import { BatchId, PostageBatch } from "@ethersphere/bee-js";
+import {
+  BatchId,
+  PostageBatch,
+  PostageBatchOptions,
+} from "@ethersphere/bee-js";
 import { useCallback, useEffect, useState } from "react";
-import { beeDebug } from "../utils/bee-node";
+import { bee } from "../utils/bee-node";
 
-export interface CreatePostageBatchArgs {
+export interface BuyPostageBatchArgs {
   amount: number;
   depth: number;
+  options?: PostageBatchOptions;
 }
 export function usePostageBatch() {
   const [postageStamps, setPostageStamps] = useState<PostageBatch[]>();
   const [isLoadingStamps, setIsLoadingStamps] = useState(false);
-  const [isCreatePostageBatch, setIsCreatePostageBatch] = useState(false);
-  const [isErrorCreatePostageBatch, setIsErrorCreatePostageBatch] =
-    useState(false);
+  const [isBuyPostageBatch, setIsBuyPostageBatch] = useState(false);
+  const [isErrorBuyPostageBatch, setIsErrorBuyPostageBatch] = useState({
+    hasError: false,
+    msg: "",
+  });
   const [getAllStampError, setGetAllStampError] = useState(false);
   const [newlyCreatedBatchId, setNewlyCreatedBatchId] = useState<BatchId>();
+  const [nodeActive, setNodeActive] = useState(false);
 
   useEffect(() => {
-    // const timeoutId = setTimeout(() => {
-    //   console.log("usePostageStamp timeout");
-    //   setGetAllStampError(!getAllStampError);
-    // }, 3000);
-    // return () => {
-    //   clearTimeout(timeoutId);
-    // };
-  }, []);
+    nodeIsConnected();
+    getAllPostageStamps();
+
+    let timeoutId: NodeJS.Timeout;
+
+    if (getAllStampError) {
+      timeoutId = setTimeout(() => {
+        setGetAllStampError(false);
+      }, 3000);
+    }
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [nodeActive]);
+
+  const nodeIsConnected = async () => {
+    if (await bee.isConnected()) {
+      setNodeActive(true);
+    }
+  };
 
   const getAllPostageStamps = useCallback(async () => {
     try {
       setIsLoadingStamps(true);
 
-      const ps: PostageBatch[] = await beeDebug.getAllPostageBatch();
+      const ps: PostageBatch[] = await bee.getAllPostageBatch();
       setPostageStamps(ps);
-
-      setIsLoadingStamps(false);
-      setGetAllStampError(false);
     } catch (err) {
-      setIsLoadingStamps(false);
       setGetAllStampError(true);
+    } finally {
+      setGetAllStampError(false);
+      setIsLoadingStamps(false);
     }
   }, [postageStamps]);
 
@@ -44,20 +64,24 @@ export function usePostageBatch() {
    * This function creates a Postage Stamp Batch
    * @param args
    */
-  const createPostageBatch = async (args: CreatePostageBatchArgs) => {
+  const buyPostageBatch = async (args: BuyPostageBatchArgs) => {
     try {
-      setIsCreatePostageBatch(true);
-      const resBatchId = await beeDebug.createPostageBatch(
+      setIsBuyPostageBatch(true);
+
+      const resBatchId = await bee.createPostageBatch(
         args.amount.toString(),
-        args.depth
+        args.depth,
+        {
+          ...args.options,
+        }
       );
 
       setNewlyCreatedBatchId(resBatchId);
-      setIsCreatePostageBatch(false);
-    } catch (err) {
-      console.log(err);
-      setIsCreatePostageBatch(false);
-      setIsErrorCreatePostageBatch(true);
+      setIsBuyPostageBatch(false);
+    } catch (err: any) {
+      console.error(err);
+      setIsBuyPostageBatch(false);
+      setIsErrorBuyPostageBatch({ hasError: true, msg: err });
     }
   };
 
@@ -66,9 +90,9 @@ export function usePostageBatch() {
     getAllPostageStamps,
     postageStamps,
     isLoadingStamps,
-    createPostageBatch,
-    isCreatePostageBatch,
-    isErrorCreatePostageBatch,
+    buyPostageBatch,
+    isBuyPostageBatch,
+    isErrorBuyPostageBatch,
     newlyCreatedBatchId,
   };
 }
