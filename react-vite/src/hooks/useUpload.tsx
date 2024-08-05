@@ -10,16 +10,15 @@ export interface IUpload {
 export function useUpload() {
   const [uploadResultWithCid, setUploadResultWithCid] =
     useState<UploadResultWithCid>();
-  const [tag, setTag] = useState<Tag>();
+  const [tagProgress, setTagProgress] = useState<Tag>();
 
   const [processing, setIsProcessing] = useState(false);
   const [error, setError] = useState<any>();
 
   const handleFileUpload = async (args: IUpload) => {
     try {
-    
       let result;
-      
+
       setIsProcessing(true);
       if (args) {
         if (args.files.length === 1) {
@@ -37,19 +36,19 @@ export function useUpload() {
       setIsProcessing(false);
       setUploadResultWithCid(result);
     } catch (err) {
-      console.log("error uploading 101", err);
+      console.error(err);
       setIsProcessing(false);
       setError(err);
     }
   };
 
-  const handleUploadProgress = async () => {
+  const getTagProgress = async () => {
     try {
       if (uploadResultWithCid?.tagUid) {
         setIsProcessing(true);
         const tag = await bee.retrieveTag(uploadResultWithCid.tagUid);
 
-        setTag(tag);
+        setTagProgress(tag);
         setIsProcessing(false);
       }
     } catch (err) {
@@ -59,8 +58,8 @@ export function useUpload() {
   };
 
   return {
-    handleUploadProgress,
-    tag,
+    getTagProgress,
+    tagProgress,
     handleFileUpload,
     uploadResultWithCid,
     processing,
