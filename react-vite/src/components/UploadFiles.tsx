@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { API_URL } from "../constant";
+import { BEE_NODE_URL } from "../constant";
 import { IUpload, useUpload } from "../hooks/useUpload";
 import MultipleUploadResult from "./MultipleUploadResult";
 import SingleUploadResult from "./SingleUploadResult";
@@ -177,14 +177,14 @@ export const UploadFile = () => {
 
       {!isMultipleFile && uploadResultWithCid?.reference && (
         <SingleUploadResult
-          link={`${API_URL}/bzz`}
+          link={`${BEE_NODE_URL}/bzz`}
           uploadResultWithCid={uploadResultWithCid!}
         />
       )}
 
       {isMultipleFile && uploadResultWithCid?.reference && (
         <MultipleUploadResult
-          link={`${API_URL}/bzz`}
+          link={`${BEE_NODE_URL}/bzz`}
           uploadResultWithCid={uploadResultWithCid!}
         />
       )}

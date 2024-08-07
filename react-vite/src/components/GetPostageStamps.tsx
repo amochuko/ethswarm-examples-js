@@ -41,7 +41,10 @@ export function GetPostageStamps() {
 
               {postageStamps &&
                 postageStamps.map((ps) => (
-                  <li key={ps.batchID} className="flex flex-col mb-8 space-y-2 divide-y divide-slate-300 ">
+                  <li
+                    key={ps.batchID}
+                    className="flex flex-col mb-12 space-y-2 divide-y divide-slate-300 border-b-4 pb-4"
+                  >
                     <p className="flex justify-between hover:cursor-pointer ">
                       <span className="text-gray-500 font-semibold text-ellipsis">
                         Batch ID:

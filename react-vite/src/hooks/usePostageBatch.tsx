@@ -14,13 +14,13 @@ export interface BuyPostageBatchArgs {
 export function usePostageBatch() {
   const [postageStamps, setPostageStamps] = useState<PostageBatch[]>();
   const [isLoadingStamps, setIsLoadingStamps] = useState(false);
-  const [isBuyPostageBatch, setIsBuyPostageBatch] = useState(false);
-  const [isErrorBuyPostageBatch, setIsErrorBuyPostageBatch] = useState({
+  const [creatingPostage, setCreatingPostage] = useState(false);
+  const [errorCreatingPostage, setErrorCreatingPostage] = useState({
     hasError: false,
     msg: "",
   });
   const [getAllStampError, setGetAllStampError] = useState(false);
-  const [newlyCreatedBatchId, setNewlyCreatedBatchId] = useState<BatchId>();
+  const [newlyCreatedStampId, setNewlyCreatedStampId] = useState<BatchId>();
   const [nodeActive, setNodeActive] = useState(false);
 
   useEffect(() => {
@@ -64,35 +64,38 @@ export function usePostageBatch() {
    * This function creates a Postage Stamp Batch
    * @param args
    */
-  const buyPostageBatch = async (args: BuyPostageBatchArgs) => {
+  const createPostageBatch = async (args: BuyPostageBatchArgs) => {
     try {
-      setIsBuyPostageBatch(true);
+
+      setCreatingPostage(true);
 
       const resBatchId = await bee.createPostageBatch(
-        args.amount.toString(),
+        BigInt(args.amount).toString(),
         args.depth,
+
         {
           ...args.options,
         }
       );
 
-      setNewlyCreatedBatchId(resBatchId);
-      setIsBuyPostageBatch(false);
+      setCreatingPostage(false);
+      setNewlyCreatedStampId(resBatchId);
     } catch (err: any) {
       console.error(err);
-      setIsBuyPostageBatch(false);
-      setIsErrorBuyPostageBatch({ hasError: true, msg: err });
+      setCreatingPostage(false);
+      setErrorCreatingPostage({ hasError: true, msg: err });
     }
   };
 
   return {
+    setErrorCreatingPostage,
     getAllStampError,
     getAllPostageStamps,
     postageStamps,
     isLoadingStamps,
-    buyPostageBatch,
-    isBuyPostageBatch,
-    isErrorBuyPostageBatch,
-    newlyCreatedBatchId,
+    createPostageBatch,
+    creatingPostage,
+    newlyCreatedStampId,
+    errorCreatingPostage,
   };
 }
