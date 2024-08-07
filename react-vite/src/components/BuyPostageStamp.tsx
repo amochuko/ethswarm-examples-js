@@ -1,38 +1,44 @@
 import { useEffect, useState } from "react";
 import { usePostageBatch } from "../hooks/usePostageBatch";
-import { format } from "../utils/format";
+import { UTILIZATION_TABLE } from "../utils";
 
-type State = {
-  amount: number | string;
+type PostageUploadState = {
+  numOfDays: number | string;
   depth: number | string;
   label?: string;
   mutable: boolean;
   [index: string]: any;
 };
 
-export const BuyPostageStamp = () => {
-  const minimumBatchDepthValue = 21;
+const GNOSIS_BLOCKTIME_IN_SECONDS = 5;
 
+const MINIMUM_POSTAGE_STAMPS_DEPTH = 21;
+const UNIT_OF_CHUNK = 4 * 1024; // 4kb
+
+export const BuyPostageStamp = () => {
   const [buyBtn, setBuyBtn] = useState(false);
-  const [values, setValues] = useState<State>({
-    amount: "",
-    depth: minimumBatchDepthValue,
+  const [isRequired, setIsRequired] = useState(false);
+  const [stampPrice, setStampPrice] = useState(24000);
+
+  const [values, setValues] = useState<PostageUploadState>({
+    numOfDays: "",
+    depth: "",
     label: "",
     mutable: false,
   });
 
   const {
-    buyPostageBatch,
-    isBuyPostageBatch,
-    newlyCreatedBatchId,
-    isErrorBuyPostageBatch,
+    newlyCreatedStampId,
+    errorCreatingPostage,
+    setErrorCreatingPostage,
+    createPostageBatch,
+    creatingPostage,
+    getAllPostageStamps,
   } = usePostageBatch();
 
   useEffect(() => {
-    newlyCreatedBatchId &&
-      alert(`Newly created Postage Batch ID: ${newlyCreatedBatchId}`);
-    isErrorBuyPostageBatch.hasError && alert(`${isErrorBuyPostageBatch.msg}`);
-  }, [newlyCreatedBatchId, isErrorBuyPostageBatch.hasError]);
+    getAllPostageStamps();
+  }, [newlyCreatedStampId]);
 
   const handleOnchange = (
     e: React.FormEvent<HTMLInputElement | HTMLSelectElement>
@@ -41,77 +47,64 @@ export const BuyPostageStamp = () => {
     const name = target.name;
     const value = target.value;
 
-    console.log(name, value);
     setValues((preState) => ({ ...preState, [name]: value }));
   };
 
-  const handleBuyPostage = async () => {
-    if (+values.depth < 17) {
-      alert("Minimal depth is 17");
-    }
-    if (values.amount == "" && values.label == "" && values.depth == "") {
-      console.log("noting... ");
+  const createPostageStamp = async (e: any) => {
+    e.preventDefault();
+
+    if (
+      values.numOfDays == "" ||
+      values.label == "" ||
+      values.depth == "" ||
+      Number(values.depth) < MINIMUM_POSTAGE_STAMPS_DEPTH ||
+      Number(values.numOfDays) <= 0
+    ) {
+      setIsRequired(true);
       return;
-    } else {
-      values.amount = format.parsexBZZ(Number(values.amount));
-      console.log("values... ", values);
+    }
 
-      // const { amount, depth, mutable, label } = values;
-      // await buyPostageBatch({
-      //   amount,
-      //   depth: Number(depth),
-      //   options: {
-      //     label,
-      //     immutableFlag: Boolean(mutable),
-      //   },
-      // });
+    try {
+      setIsRequired(false);
 
-      setValues({ amount: "", depth: 17, label: "", mutable: false });
+      await createPostageBatch({
+        amount: estimatedAmountForTTL(),
+        depth: Number(values.depth),
+        options: {
+          label: values.label,
+          immutableFlag: values.mutable,
+        },
+      });
+
+      setValues({
+        numOfDays: "",
+        depth: "",
+        label: "",
+        mutable: false,
+      });
+    } catch (e: any) {
+      console.error(e);
+    } finally {
+      e.target.reset();
     }
   };
 
-  const handleCostEstimate = () => {
-    // PostageBatchBucket = 2 ** bucketDepth
+  const estimateStorageSize = () => {
+    return {
+      effectiveStorageVolume: 2 ** Number(values.depth),
+      theoreticalStorageVolume: 2 ** Number(values.depth) * UNIT_OF_CHUNK,
+    };
+  };
 
-    // batchDepth :~ how much data can be stored (stamped) by a batch =  2 ** batchDepth
-    // ex: if batchDepth = 24, then 2 ** 24 of chunks can be stored.
-    // theoretical maxBatchVolume = (2 ** batchDept) * 4kb (one chunk)
-
-    // bucketDepth :~ how many chunks are allowed in each bucket = 2 ** (batchDepth - bucketDepth)
-    // ex: with batchDepth = 24, and bucketDepth = 16
-    // 2 ** (24 - 16) = 2 ** 8 = 256 chucks/bucket
-
-    const minimumBatchDepthValue = 21;
-    const dataOrChunkSize = 2 ** minimumBatchDepthValue; // can be stamped
-
-    // batch Amount (batchCost) : amount of xBZZ in PLUR (1 * 10**16) per chunk in the batch
-    // total batchAmount paid for a batch = (2 ** batchDepth) * amount (xBZZ in PLUR)
-    // example:
-    // batchDepth = 24, amount = 1000000000 PLUR
-    // total batchAmount = (2 ** 24) * 1000000000 PLUR = 16777216000000000 PLUR ~ 1.6777216 xBZZ
-
+  const estimatedAmountForTTL = () => {
     // Estimating `amount` needed for desired TTL
-    // (stampPrice / gnosisBlocktimeInSeconds) * storageTimeInSeconds (duration)
-    // ex: stampPrice = 24000 PLUR, blocktime = 5, duration = 12 days (1 day = 24 hr * 60 min * 60 secs)
-    // ttlAmountNeeded for 4 days = (24000 / 5) * (5 * 24 * 60 * 60) = 4976640000 PLUR
-
     const secsPerDay = 24 * 60 * 60;
-    const ttlInDays = 12;
-    const storageTimeInSeconds = ttlInDays * secsPerDay;
-    const gnosisBlocktimeInSeconds = 5;
-    const postpageStampPrice = 24000;
+    const storageTimeInSeconds = Number(values.numOfDays) * secsPerDay;
 
-    const ttlAmountNeeded =
-      (postpageStampPrice / gnosisBlocktimeInSeconds) * storageTimeInSeconds;
+    const amount =
+      (stampPrice / GNOSIS_BLOCKTIME_IN_SECONDS) * storageTimeInSeconds;
 
-    // console.log("ttlAmountNeeded: ", format.parsePlur(ttlAmountNeeded));
-
-    const batchDepth = 24;
-    const totalBatchAmount = ttlAmountNeeded * 2 ** batchDepth;
-    const pricePerGBPerMonth = 0.00005435817984;
-    const price = pricePerGBPerMonth * 2 ** batchDepth;
-
-    // console.log("totalBatchAmount: ", format.formatPlur(16777216000000000));
+    return amount;
   };
 
   return (
@@ -128,55 +121,121 @@ export const BuyPostageStamp = () => {
       )}
 
       {buyBtn && (
-        <>
+        <form onSubmit={createPostageStamp}>
           <div className="flex flex-col justify-between sm:flex-row ">
             <div className="flex-col space-y-2 mb-4 text-stone-500 font-medium sm:min-w-[45%]">
-              <label htmlFor="label">Batch Label </label>
-              <input
-                className="p-4 border-[1px] w-full"
-                type="text"
-                value={values["label"]}
-                id="label"
-                name="label"
-                placeholder="Name of Batch"
-                onChange={handleOnchange}
-              />
+              <div className="mb-2">
+                <label htmlFor="depth">Depth</label>
+                <input
+                  className="p-4 border-[1px] w-full"
+                  type="number"
+                  value={values["depth"]}
+                  id="depth"
+                  name="depth"
+                  placeholder="Depth size"
+                  min={MINIMUM_POSTAGE_STAMPS_DEPTH}
+                  onChange={handleOnchange}
+                />
+              </div>
+              <div>
+                {isRequired && values.depth == "" && (
+                  <span className="text-red-500 font-normal">
+                    Please enter a depth size
+                  </span>
+                )}
+
+                {values.depth !== "" &&
+                  Number(values.depth) < MINIMUM_POSTAGE_STAMPS_DEPTH && (
+                    <span className="text-red-500 font-normal">
+                      Minimum depth is {MINIMUM_POSTAGE_STAMPS_DEPTH}
+                    </span>
+                  )}
+
+                {values.depth && (
+                  <span className="flex flex-col space-y-1 my-2 font-normal">
+                    <h3 className="font-semibold">Estimated file size</h3>
+                    <span>
+                      Theoretical:{" "}
+                      {values.depth &&
+                        UTILIZATION_TABLE(String(values.depth))
+                          .theoreticalMaxVolume}
+                      {/*  
+                      {convertBytes(
+                        estimateStorageSize().theoreticalStorageVolume
+                      )}
+                      */}
+                    </span>
+                    <span>
+                      Effective:{" "}
+                      {/* {convertBytes(
+                        estimateStorageSize().effectiveStorageVolume
+                      )} */}
+                      {values.depth &&
+                        UTILIZATION_TABLE(String(values.depth)).effectiveVolume}
+                    </span>
+                  </span>
+                )}
+              </div>
             </div>
             <div className="flex-col space-y-2 text-stone-500 font-medium sm:min-w-[45%]">
-              <label htmlFor="amount">Batch Size</label>
-              <select
-                name="amount"
-                id="amount"
-                className="p-4 border-[1px] w-full"
-                onChange={handleOnchange}
-              >
-                <option value={" Select size in GB"} style={{ color: "red" }}>
-                  Select size in GB
-                </option>
-                {Array.from([1, 2, 3, 4, 5, 10, 12, 15]).map((e, i) => (
-                  <option key={i} value={e * 2}>
-                    {e * 2} GB
-                  </option>
-                ))}
-              </select>
+              <div className="mb-2">
+                <label htmlFor="numOfDays">Duration:</label>
+                <input
+                  className="p-4 border-[1px] w-full"
+                  type="number"
+                  id="numOfDays"
+                  name="numOfDays"
+                  min="1"
+                  max="365"
+                  placeholder="Number of Days"
+                  onChange={handleOnchange}
+                />
+              </div>
+              <span aria-describedby="error">
+                {Number(values.numOfDays) != 0 && values.numOfDays && (
+                  <span className="flex flex-row justify-between font-normal">
+                    <span>Estimated cost: {estimatedAmountForTTL()} PLUR</span>
+                  </span>
+                )}
+
+                {isRequired && values.numOfDays === "" && (
+                  <span className="mt-2 text-red-500">
+                    Please enter a duration
+                  </span>
+                )}
+                {values.numOfDays != "" && Number(values.numOfDays) <= 0 && (
+                  <span className="mt-2 text-red-500">
+                    Minimium duration is 1
+                  </span>
+                )}
+              </span>
             </div>
           </div>
           <div className="flex flex-col justify-between sm:flex-row">
             <div className="flex-col space-y-2 mb-4 text-stone-500 font-medium sm:min-w-[45%]">
-              <label htmlFor="depth">Depth</label>
-              <input
-                className="p-4 border-[1px] w-full"
-                type="number"
-                value={values["depth"]}
-                id="depth"
-                name="depth"
-                placeholder="Number of days"
-                min={minimumBatchDepthValue}
-                onChange={handleOnchange}
-              />
+              <div className="mb-2">
+                <label htmlFor="label">Batch Label </label>
+                <input
+                  className="p-4 border-[1px] w-full"
+                  type="text"
+                  value={values["label"]}
+                  id="label"
+                  name="label"
+                  placeholder="Name of Batch"
+                  onChange={handleOnchange}
+                />
+              </div>
+              <span aria-describedby="error">
+                {isRequired && values.label === "" && (
+                  <span className="mt-2 text-red-500">
+                    Please enter a label
+                  </span>
+                )}
+              </span>
             </div>
+
             <div className="flex-col space-y-2 text-stone-500 font-medium sm:min-w-[45%]">
-              <label htmlFor="mutable">Is Mutable</label>
+              <label htmlFor="mutable">Mutable</label>
               <select
                 name="mutable"
                 id="mutable"
@@ -190,8 +249,8 @@ export const BuyPostageStamp = () => {
                 >
                   Select option
                 </option>
-                {Array.from(["false", "true"]).map((e, i) => (
-                  <option defaultValue={e} key={i} selected={i === 0}>
+                {Array.from(["No", "Yes"]).map((e, i) => (
+                  <option defaultValue={e} key={i}>
                     {e.toUpperCase()}
                   </option>
                 ))}
@@ -199,29 +258,45 @@ export const BuyPostageStamp = () => {
             </div>
           </div>
 
-          <div className="space-x-4">
+          <div className="space-x-4 mt-8">
             <button
-              className={`text-xl border-2 border-solid bg-gray-600 text-white w-32 ${
+              className={`text-xl border-2 border-solid bg-gray-600 text-white w-40 ${
                 values.amount === "" &&
                 (values.depth === ""
                   ? "hover:cursor-not-allowed hover:bg-slate-600 text-slate-400"
                   : "hover:bg-yellow-500 hover:cursor-pointer  hover:text-black")
               } p-4`}
-              type="submit"
-              // disabled={values.amount == "" || values.depth == ""}
-              onClick={handleBuyPostage}
             >
-              {isBuyPostageBatch ? "Process..." : "Buy"}
+              {creatingPostage ? "Processing..." : "Buy"}
             </button>
             <button
-              className={`text-xl border-2 border-solid bg-gray-600 text-white w-32 p-4 hover:bg-yellow-500 hover:cursor-pointer hover:text-black`}
-              type="submit"
-              onClick={() => setBuyBtn(!buyBtn)}
+              className={`text-xl border-2 border-solid bg-gray-600 text-white w-40 p-4 hover:bg-yellow-500 hover:cursor-pointer hover:text-black`}
+              onClick={() => {
+                setIsRequired(false);
+
+                setBuyBtn(!buyBtn);
+                setErrorCreatingPostage({ hasError: false, msg: "" });
+                setValues({
+                  numOfDays: "",
+                  depth: "",
+                  mutable: false,
+                  label: "",
+                });
+              }}
             >
               Cancel
             </button>
           </div>
-        </>
+
+          {newlyCreatedStampId == "" && errorCreatingPostage.hasError && (
+            <div aria-describedby="error" className="mt-4">
+              <p className="text-red-500 space-y-2">
+                <span>Error Creating Postage:</span>
+                {JSON.stringify(errorCreatingPostage.msg)}
+              </p>
+            </div>
+          )}
+        </form>
       )}
     </section>
   );
