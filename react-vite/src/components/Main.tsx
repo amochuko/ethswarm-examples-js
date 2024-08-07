@@ -9,10 +9,9 @@ function Main() {
 
   return (
     <main className="flex-grow">
-      <PostageStamps />
       {nodeHealth?.status == "ok" && (
         <>
-          {/* <PostageStamps /> */}
+          <PostageStamps />
           {postageStamps && postageStamps?.length > 0 && <UploadFile />}
         </>
       )}
