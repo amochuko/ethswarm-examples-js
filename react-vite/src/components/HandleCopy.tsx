@@ -1,4 +1,4 @@
-import { format } from "../utils/format";
+import { format } from "../utils";
 
 const HandleCopy = ({ txt }: { txt: string }) => {
   const handleClick = async () => {
