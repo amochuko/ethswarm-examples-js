@@ -18,7 +18,7 @@
     "ethswarm"
   ],
   "author": "ogheneochuko",
-  "license": "MIT",
+  "license": "BSD-3-Clause",
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@babel/preset-react": "^7.24.7",
