@@ -1,6 +1,6 @@
 # React + Vite + (typescript)
 
-This is a sample project that shows off the functionalities of the Swarm network, and serves as a simple example for developers looking to build a dApp that uses the decentralised Swarm storage with Frontend Tooling setup.
+This is a sample project that shows off the functionalities of the Swarm network, and serves as a simple example for developers looking to build a dApp that uses the decentralised Swarm storage with Vite Frontend Tooling setup.
 
 ## Dev Stacks
 
