@@ -13,7 +13,7 @@ type CreatePostageBatch = {
   label?: string;
 };
 
-const CreatePostageStamp = () => {
+const CreatePostageStamp = (props: { avaliablePostBatch: number }) => {
   const [buyBtn, setBuyBtn] = useState(false);
   const [isRequired, setIsRequired] = useState(false);
   const [stampPrice, setStampPrice] = useState(24000);
@@ -51,8 +51,6 @@ const CreatePostageStamp = () => {
     setPostageData((prevState) => ({ ...prevState, [name]: value }));
   };
 
-   
-
   const createPostageStamp = async (e: any) => {
     e.preventDefault();
 
@@ -83,7 +81,6 @@ const CreatePostageStamp = () => {
         depth: "",
         label: "",
       });
-
     } catch (e: any) {
       console.error(e);
     } finally {
@@ -107,20 +104,34 @@ const CreatePostageStamp = () => {
   };
 
   return (
-    <div className="container bg" style={{ margin: "48px 0" }}>
-      <div className="row">
-        <h2 className="" style={{ fontSize: "2rem" , marginBottom: '32px'}}>
-          Create Postage Stamp
+    <div className="row " style={{ marginTop: "24px" }}>
+      <div className="container bg">
+        {props.avaliablePostBatch === 0 && (
+          <p
+            style={{
+              width: "100%",
+              background: "rgba(0,0,175,0.12)",
+              padding: "8px",
+              fontWeight: 600,
+              color: "#333",
+              marginBottom: "48px",
+            }}
+          >
+            You don't have any Postage Stamp avaliable
+          </p>
+        )}
+        <h2 className="" style={{ fontSize: "2rem", marginBottom: "32px" }}>
+          Get Postage Stamp
         </h2>
         {!buyBtn && (
           <button type="submit" onClick={() => setBuyBtn(!buyBtn)}>
-            Buy Stamp
+            Buy Postage Stamp
           </button>
         )}
       </div>
 
       {buyBtn && (
-        <form onSubmit={createPostageStamp}>
+        <form onSubmit={createPostageStamp} className="container bg">
           <div className="row">
             <div className="block">
               <div className=" ">
