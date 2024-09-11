@@ -1,10 +1,11 @@
 import {
   BatchId,
+  Bee,
   PostageBatch,
   PostageBatchOptions,
 } from "@ethersphere/bee-js";
-import { useCallback, useContext, useEffect, useState } from "react";
-import { BeeContext } from "../context/beeContext";
+import { useCallback, useEffect, useState } from "react";
+import utils from "../utils";
 
 export interface BuyPostageBatchArgs {
   amount: number;
@@ -13,7 +14,8 @@ export interface BuyPostageBatchArgs {
 }
 
 export function usePostageBatch() {
-  const bee = useContext(BeeContext);
+
+   const bee = utils.getBee();
 
   const [postageBatches, setPostageBatch] = useState<PostageBatch[]>();
   const [isLoadingPostageBatch, setIsLoadingStamps] = useState(false);
@@ -31,6 +33,7 @@ export function usePostageBatch() {
     getAllPostageBatches();
 
     let timeoutId: NodeJS.Timeout;
+    console.log("loading...");
     if (getAllPostageError) {
       timeoutId = setTimeout(() => {
         setGetAllPostageError(false);
@@ -43,8 +46,11 @@ export function usePostageBatch() {
   }, [nodeActive]);
 
   const nodeIsConnected = async () => {
+    console.log('connected: ', 'conn');
     if (bee) {
       const conn = await bee.isConnected();
+      console.log('connected: ', conn);
+
       setNodeActive(conn);
     }
   };
@@ -53,8 +59,9 @@ export function usePostageBatch() {
     try {
       setIsLoadingStamps(true);
 
-      const ps: PostageBatch[] = await bee!.getAllPostageBatch();
+      const ps: PostageBatch[] = await bee.getAllPostageBatch();
       setPostageBatch(ps);
+      console.log("ps: ", ps);
     } catch (err) {
       setGetAllPostageError(true);
     } finally {
@@ -68,10 +75,13 @@ export function usePostageBatch() {
    * @param args
    */
   const createPostageBatch = async (args: BuyPostageBatchArgs) => {
+    console.log("args: ", args);
+
+    // return;
     try {
       setCreatingPostageBatch(true);
 
-      const resBatchId = await bee!.createPostageBatch(
+      const resBatchId = await bee.createPostageBatch(
         BigInt(args.amount).toString(),
         args.depth,
 

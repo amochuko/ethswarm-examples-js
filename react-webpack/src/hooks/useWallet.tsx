@@ -1,10 +1,9 @@
 import { WalletBalance } from "@ethersphere/bee-js";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import utils from "../utils";
-import { BeeContext } from "../context/beeContext";
 
 export function useWallet() {
-  const bee = useContext(BeeContext);
+  const bee  = utils.getBee()
 
   const [balance, setBalance] = useState<WalletBalance>();
   const [error, setError] = useState(false);
