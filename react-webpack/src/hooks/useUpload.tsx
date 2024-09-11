@@ -1,11 +1,17 @@
-import { BatchId, Tag, UploadResultWithCid } from "@ethersphere/bee-js";
+import {
+  BatchId,
+  FileUploadOptions,
+  Tag,
+  UploadRedundancyOptions,
+  UploadResultWithCid,
+} from "@ethersphere/bee-js";
 import { useContext, useState } from "react";
 import { BeeContext } from "../context/beeContext";
 
 export interface IUpload {
   postageBatchId: string | BatchId;
   files: File[];
-  options: Record<string, boolean>;
+  options: FileUploadOptions & UploadRedundancyOptions;
 }
 
 const useUpload = () => {
@@ -18,7 +24,12 @@ const useUpload = () => {
   const [error, setError] = useState<any>();
 
   const handleFileUpload = async (args: IUpload) => {
-    console.log(args);
+    const opts: Record<string, any> = {
+      contentType: args.files[0].type,
+      pin: args.options.pin,
+      size: args.files[0].size,
+      redundancyLevel: args.options.redundancyLevel,
+    };
 
     try {
       let result;
@@ -30,13 +41,12 @@ const useUpload = () => {
             args.postageBatchId,
             args.files[0],
             args.files[0].name,
-            { ...args.options }
+            { ...opts }
           );
         }
-
         if (args.files.length > 1) {
           result = await bee!.uploadFiles(args.postageBatchId, args.files, {
-            ...args.options,
+            ...opts,
           });
         }
       }
