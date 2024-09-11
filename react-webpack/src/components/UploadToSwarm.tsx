@@ -39,7 +39,6 @@ const uploadOptions: PostageUploadOptions = {
 };
 
 const UploadToSwarm = (props: UploadToSwarmProps) => {
-  const bee = utils.getBee();
   const { getAllPostageError, postageBatches, isLoadingPostageBatch } =
     usePostageBatch();
   const { handleFileUpload, uploadResultWithCid, error, processing } =
@@ -289,14 +288,14 @@ const UploadToSwarm = (props: UploadToSwarmProps) => {
 
         {!isMultipleFile && uploadResultWithCid?.reference && (
           <SingleUploadResult
-            link={`${utils.getNodeUrl()}/bzz`}
+            link={`${utils.getBeeNodeUrl()}/bzz`}
             uploadResultWithCid={uploadResultWithCid!}
           />
         )}
 
         {isMultipleFile && uploadResultWithCid?.reference && (
           <MultipleUploadResult
-            link={`${utils.getNodeUrl()}/bzz`}
+            link={`${utils.getBeeNodeUrl()}/bzz`}
             uploadResultWithCid={uploadResultWithCid!}
           />
         )}
