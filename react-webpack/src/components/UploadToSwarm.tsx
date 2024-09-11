@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { usePostageBatch } from "../hooks/usePostageBatch";
 import useUpload from "../hooks/useUpload";
 import utils from "../utils";
 import MultipleUploadResult from "./MultipleUploadResult";
@@ -7,6 +6,7 @@ import SingleUploadResult from "./SingleUploadResult";
 
 export interface IUpload {
   files: File[];
+  redundancyLevel?: number;
 }
 
 type UploadToSwarmProps = {
@@ -18,33 +18,31 @@ type PostageUpload = {
   depth: number | string;
 };
 
-type PostageUploadOptions = {
+export type PostageUploadOptions = {
   label?: string;
   redundancyLevel?: number;
   mutable?: boolean;
   pin?: boolean;
-  encrypt?: boolean;
-  deferred?: boolean;
   contentType?: boolean;
   size?: boolean;
 };
 
 const uploadOptions: PostageUploadOptions = {
   contentType: false,
-  deferred: false,
-  encrypt: false,
-  mutable: false,
   pin: false,
   size: false,
 };
 
 const UploadToSwarm = (props: UploadToSwarmProps) => {
-  const { getAllPostageError, postageBatches, isLoadingPostageBatch } =
-    usePostageBatch();
-  const { handleFileUpload, uploadResultWithCid, error, processing } =
-    useUpload();
+  const {
+    handleFileUpload,
+    uploadResultWithCid,
+    error: uploadError,
+    processing,
+  } = useUpload();
 
   const [fileSize, setFileSize] = useState("");
+  const [showUploadOptions, setShowUploadOptions] = useState(false);
   const [isRequired, setIsRequired] = useState(false);
   const [isMultipleFile, setIsMultipleFile] = useState(false);
 
@@ -55,11 +53,6 @@ const UploadToSwarm = (props: UploadToSwarmProps) => {
   const [checkBoxes, setCheckboxes] = React.useState(
     new Array(Object.keys(uploadOptions).length).fill(false)
   );
-
-  const [uploadDataTwo, setUploadData] = useState<PostageUploadOptions>({
-    label: "",
-    redundancyLevel: 1,
-  });
 
   useEffect(() => {
     getFileSize();
@@ -101,6 +94,7 @@ const UploadToSwarm = (props: UploadToSwarmProps) => {
       const updatedCheckedStatee = checkBoxes.map((c, i) =>
         i == index ? !c : c
       );
+
       setCheckboxes(updatedCheckedStatee);
     }
   };
@@ -123,7 +117,7 @@ const UploadToSwarm = (props: UploadToSwarmProps) => {
     await handleFileUpload({
       postageBatchId: props.selectedBatchId,
       files: uploadData.files,
-      options: { ...getUploadOptions() },
+      options: { ...getUploadOptions(), redundancyLevel: uploadData.redundancyLevel },
     });
 
     setLoadData({ files: [] });
@@ -168,6 +162,11 @@ const UploadToSwarm = (props: UploadToSwarmProps) => {
 
     return obj;
   };
+
+  const handleShowUploadOptions = () => {
+    setShowUploadOptions(!showUploadOptions);
+  };
+
   return (
     <div className="container bg">
       <h2 style={{ fontSize: "2rem", margin: "48px 0" }}>Upload a file</h2>
@@ -230,6 +229,7 @@ const UploadToSwarm = (props: UploadToSwarmProps) => {
                 id="redundancyLevel"
                 onChange={(e) => handleChange(e)}
               >
+                <option defaultValue={'Select value'}>Select level</option>
                 {Array(4)
                   .fill(1)
                   .map((n, i) => (
@@ -242,37 +242,54 @@ const UploadToSwarm = (props: UploadToSwarmProps) => {
           </div>
 
           <div style={{ margin: "62px 0" }}>
-            <h3 style={{ margin: "32px 0" }}>[Upload Options]</h3>
-
-            {Object.keys(uploadOptions).map((key, i) => (
-              <div
-                key={key + i}
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <label
-                  id={key}
-                  htmlFor={key}
+            <h3
+              style={{
+                margin: "32px 0",
+                display: "flex",
+                justifyContent: "space-between",
+                cursor: "pointer",
+              }}
+              onClick={handleShowUploadOptions}
+            >
+              <span> [Upload Options]</span>
+              <span>
+                {showUploadOptions ? (
+                  <i className="arrow down"></i>
+                ) : (
+                  <i className="arrow right"></i>
+                )}
+              </span>
+            </h3>
+            {showUploadOptions &&
+              Object.keys(uploadOptions).map((key, i) => (
+                <div
+                  key={key + i}
                   style={{
-                    width: "10px",
-                    fontSize: "1.3rem",
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
                 >
-                  {key[0].toUpperCase() + key.slice(1)}
-                </label>
-                <input
-                  type="checkbox"
-                  id={`checkbox-${i + 1}`}
-                  checked={checkBoxes[i]}
-                  name={key}
-                  onChange={(e) => handleChange(e, i)}
-                />
-              </div>
-            ))}
+                  <label
+                    id={key}
+                    htmlFor={key}
+                    style={{
+                      width: "10px",
+                      fontSize: "1.3rem",
+                    }}
+                  >
+                    {key[0].toUpperCase() + key.slice(1)}
+                  </label>
+                  <input
+                    type="checkbox"
+                    id={`checkbox-${i + 1}`}
+                    checked={checkBoxes[i]}
+                    name={key}
+                    onChange={(e) => handleChange(e, i)}
+                  />
+                </div>
+              ))}
           </div>
 
           <button type="submit" disabled={processing}>
@@ -280,10 +297,17 @@ const UploadToSwarm = (props: UploadToSwarmProps) => {
           </button>
         </form>
 
-        {error && (
-          <>
-            <p className="">{error}</p>
-          </>
+        {uploadError && (
+          <p
+            className="error"
+            style={{
+              padding: "4px",
+              backgroundColor: "rgba(255,0,0,0.1)",
+              fontWeight: 500,
+            }}
+          >
+            {String(uploadError)}
+          </p>
         )}
 
         {!isMultipleFile && uploadResultWithCid?.reference && (
