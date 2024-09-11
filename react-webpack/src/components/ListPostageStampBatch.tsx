@@ -1,9 +1,9 @@
 import { Utils } from "@ethersphere/bee-js";
 import React, { useState } from "react";
+import { useNodeHealth } from "../hooks/useNodeHealth";
 import { usePostageBatch } from "../hooks/usePostageBatch";
 import CreatePostageStamp from "./CreatePostageStamp";
 import UploadToSwarm from "./UploadToSwarm";
-import { useNodeHealth } from "../hooks/useNodeHealth";
 
 export default function ListPostageStampsBatch() {
   const { getAllPostageError, postageBatches, isLoadingPostageBatch } =
@@ -34,19 +34,19 @@ export default function ListPostageStampsBatch() {
     <>
       {nodeHealth?.status === "ok" && (
         <>
-          <div className="container">
-            <CreatePostageStamp />
+          <CreatePostageStamp avaliablePostBatch={postageBatches!.length} />
+          {getAllPostageError && (
             <div className="row">
-              {getAllPostageError && (
-                <p className="error">Error fetching Postage stamps!</p>
-              )}
+              <p className="error">Error fetching Postage stamps!</p>
             </div>
-            <div className="row">
-              {postageBatches && postageBatches.length > 0 && (
+          )}
+          {postageBatches && postageBatches.length > 0 && (
+            <div className="container">
+              <div className="row">
                 <h2 style={{ fontSize: "2rem", margin: "24px 0" }}>
                   Available Stamps ({postageBatches?.length})
                 </h2>
-              )}
+              </div>
 
               <ul className="postageStamps" style={{ margin: "24px 0" }}>
                 {isLoadingPostageBatch && <li>Loading...</li>}
@@ -112,12 +112,7 @@ export default function ListPostageStampsBatch() {
                   ))}
               </ul>
             </div>
-            {postageBatches && postageBatches?.length === 0 && (
-              <div className="row">
-                <p>You don't have any Postage Stamp</p>
-              </div>
-            )}
-          </div>
+          )}
 
           <UploadToSwarm selectedBatchId={selectedBatchId} />
         </>
