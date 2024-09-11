@@ -1,9 +1,12 @@
 import React from "react";
+import { useNodeHealth } from "../hooks/useNodeHealth";
 import BeeNodeUrlSetup from "./BeeNodeUrlSetup/BeeNodeUrlSetup";
 import ListPostageStampsBatch from "./ListPostageStampBatch";
 
 export default function Home() {
   const date = new Date();
+  const { healthError } = useNodeHealth();
+
   return (
     <div
       style={{
@@ -16,13 +19,14 @@ export default function Home() {
       <header>
         <BeeNodeUrlSetup />
       </header>
-      <main style={{}}>
+      <main>
         <ListPostageStampsBatch />
       </main>
-      <footer style={{ textAlign: "center", marginBottom: "12px" }}>
-        {" "}
-        &copy; {date.getFullYear()}
-      </footer>
+      {!healthError && (
+        <footer style={{ textAlign: "center", margin: "12px 0" }}>
+          &copy; {date.getFullYear()}
+        </footer>
+      )}
     </div>
   );
 }
