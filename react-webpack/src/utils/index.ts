@@ -1,4 +1,3 @@
-import { Bee } from "@ethersphere/bee-js";
 import { BEE_NODE_URL } from "./constant";
 
 const isValidURL = (url: string) => {
@@ -200,31 +199,34 @@ const estimateStorageSize = (depth: number, UNIT_OF_CHUNK = 4) => {
   };
 };
 
-const getNodeUrl = () => {
+const getBeeNodeUrl = () => {
   const url = localStorage.getItem(BEE_NODE_URL);
-
-  if (url !== undefined && url != null) {
+  if (url) {
     return url;
   } else {
-    return "No found Bee Node URL";
+    throw Error("No BeeNode url stored in local storage");
   }
 };
 
-const getBee = () => new Bee(getNodeUrl());
-
-const clearNodeUrl = () => {
-  // const url = localStorage.clear();
-};
-
 const setBeeNodeUrl = (url: string) => {
-  if (!getNodeUrl()) {
+  if (!getBeeNodeUrl()) {
     localStorage.setItem(BEE_NODE_URL, url);
   }
 };
 
+const updateBeeNodeUrl = (url: string) => {
+  if (getBeeNodeUrl()) {
+    localStorage.setItem(BEE_NODE_URL, url);
+  }
+};
+
+const clearNodeUrl = (beeNodeUrl: string) => {
+  localStorage.removeItem(beeNodeUrl);
+};
+
 const utils = {
-  getNodeUrl,
-  getBee,
+  updateBeeNodeUrl,
+  getBeeNodeUrl,
   setBeeNodeUrl,
   isValidURL,
   clearNodeUrl,
