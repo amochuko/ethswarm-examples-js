@@ -128,7 +128,7 @@ p {
 }
 
 .error {
-    color: rgb(230, 66, 66);
+    color: tomato;
     font-size: 1.25rem;
 }
 
@@ -238,4 +238,20 @@ form {
 
 .hover\:text-clip:hover {
     text-overflow: clip;
+}
+
+.app-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20%;
+    padding: 24px;
+
+}
+
+.app-container-chaid {
+    align-self: center;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
 }
