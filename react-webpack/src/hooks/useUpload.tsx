@@ -1,6 +1,6 @@
 import { BatchId, Tag, UploadResultWithCid } from "@ethersphere/bee-js";
-import { useState } from "react";
-import utils from "../utils";
+import { useContext, useState } from "react";
+import { BeeContext } from "../context/beeContext";
 
 export interface IUpload {
   postageBatchId: string | BatchId;
@@ -9,7 +9,7 @@ export interface IUpload {
 }
 
 const useUpload = () => {
-  const bee = utils.getBee();
+  const bee = useContext(BeeContext);
 
   const [uploadResultWithCid, setUploadResultWithCid] =
     useState<UploadResultWithCid>();

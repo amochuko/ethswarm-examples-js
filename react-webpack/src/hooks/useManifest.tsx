@@ -1,8 +1,9 @@
 import { ManifestJs } from "@ethersphere/manifest-js";
-import utils from "../utils";
+import { useContext } from "react";
+import { BeeContext } from "../context/beeContext";
 
 export function useManifest() {
-  const bee = utils.getBee()
+  const bee = useContext(BeeContext);
   const manifestJs = new ManifestJs(bee!);
 
   const isManifest = async (hash: string) => {
