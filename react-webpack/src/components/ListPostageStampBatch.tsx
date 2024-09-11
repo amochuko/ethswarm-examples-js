@@ -23,10 +23,6 @@ export default function ListPostageStampsBatch() {
 
   const toxBZZ = (plur: number) => {
     const amt = Utils.getAmountForTtl(7);
-    // console.log("amount from ttl: ", amt);
-
-    // const costInPlur = Utils.getStampCostInPlur(23)
-    //    const costInBzz = Utils.getStampCostInBzz();
     return (plur / 10 ** 16).toFixed(4);
   };
 
