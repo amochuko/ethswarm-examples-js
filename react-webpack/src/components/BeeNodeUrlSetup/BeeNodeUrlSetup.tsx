@@ -1,10 +1,8 @@
-import React, { useEffect, useState } from "react";
-
+import React, { useState } from "react";
 import { useNodeHealth } from "../../hooks/useNodeHealth";
 import utils from "../../utils";
 
 export default function BeeNodeUrlSetup() {
-  const [inputUrl, setInputUrl] = useState("");
   const [url, setUrl] = useState("");
   const [urlError, setUrlError] = useState("");
   const [isRequired, setIsRequird] = useState(false);
@@ -13,11 +11,6 @@ export default function BeeNodeUrlSetup() {
 
   const { healthError, isLoading: loadingHealth, nodeHealth } = useNodeHealth();
 
-  useEffect(() => {
-    getNodeUrl();
-    return () => {};
-  }, []);
-
   const onChange = (e: React.FormEvent<HTMLInputElement>) => {
     e.preventDefault();
 
@@ -25,27 +18,19 @@ export default function BeeNodeUrlSetup() {
 
     if (value) {
       setIsRequird(false);
-      setInputUrl(value);
+      setUrl(value);
     }
   };
 
-  const getNodeUrl = () => {
-    const url = utils.getNodeUrl();
-    console.log("url", url);
-    setUrl(url);
-  };
-
-  const handleSetBeeNodeUrl = () => {};
-
-  const handleSubmit = () => {
+  const handleUpdateNodeUrl = () => {
     try {
-      if (inputUrl === "") {
+      if (url === "") {
         setIsRequird(true);
         setUrlError("Enter a Bee node URL");
         return;
       }
 
-      if (!utils.isValidURL(inputUrl.trim())) {
+      if (!utils.isValidURL(url.trim())) {
         setIsRequird(true);
         setUrlError("Not a valid Bee node URL");
         return;
@@ -53,8 +38,8 @@ export default function BeeNodeUrlSetup() {
 
       setIsSaving(true);
 
-      utils.setBeeNodeUrl(utils.removeSlashFromUrl(inputUrl.trim()));
-      setInputUrl("");
+      utils.updateBeeNodeUrl(utils.removeSlashFromUrl(url.trim()));
+      setUrl("");
     } catch (err) {
       console.log(err);
     } finally {
@@ -67,15 +52,16 @@ export default function BeeNodeUrlSetup() {
       {loadingHealth && (
         <p style={{ fontSize: "1.2rem", textAlign: "center" }}>Loading...</p>
       )}
+
       {healthError && (
         <p style={{ textAlign: "center", fontWeight: 500 }}>
           <span className="error" style={{ fontSize: "1.25rem" }}>
             {healthError === "ERR_NETWORK" && "Error with the network..."}
-          </span>{" "}
+          </span>
         </p>
       )}
 
-      {!healthError && url && nodeHealth?.status === "ok" && (
+      {!healthError && nodeHealth?.status === "ok" && (
         <div className="container">
           <div className="row">
             <div
@@ -84,7 +70,7 @@ export default function BeeNodeUrlSetup() {
                 display: "inline-flex",
                 gap: "4px",
                 flexDirection: "column",
-                margin: "48px 0",
+                margin: "24px 0",
                 fontWeight: 500,
                 fontSize: "1.12rem",
               }}
@@ -92,7 +78,7 @@ export default function BeeNodeUrlSetup() {
               <span>Status: {nodeHealth?.status}</span>
               <span>Api Version: {nodeHealth?.apiVersion}</span>
               <span>Version: {nodeHealth?.version}</span>
-              <div>Connected to node via: {url}</div>
+              <div>Connected to node via: {utils.getBeeNodeUrl()}</div>
             </div>
           </div>
 
@@ -101,11 +87,14 @@ export default function BeeNodeUrlSetup() {
               style={{
                 display: "inline-flex",
                 gap: "4px",
-                margin: "48px 0",
+                margin: "24px 0",
               }}
             >
-              <button onClick={() => setUpdateUrl(!updateUrl)}>
-                {url ? "Update Bee node url" : "Set Bee Node Url"}
+              <button
+                onClick={() => setUpdateUrl(!updateUrl)}
+                style={{ display: `${updateUrl ? "none" : "block"}` }}
+              >
+                Update Bee Node Url
               </button>
             </div>
           </div>
@@ -114,7 +103,7 @@ export default function BeeNodeUrlSetup() {
             <div className="row">
               <div>
                 <h1 style={{ fontSize: "2rem" }}>
-                  Connect to your Bee Node by submitting its URL.
+                  Update the URL to your Bee Node.
                 </h1>
                 <p style={{ fontSize: "1.25rem", marginBottom: "24px" }}>
                   (Url would be saved to your browser local storage)
@@ -140,7 +129,7 @@ export default function BeeNodeUrlSetup() {
                   name="nodeUrl"
                   id="nodeUrl"
                   height="80px"
-                  value={inputUrl}
+                  value={url}
                   placeholder="Enter node url"
                 />
               </div>
@@ -156,19 +145,8 @@ export default function BeeNodeUrlSetup() {
                 className="row"
                 style={{ display: "inline-flex", gap: "24px" }}
               >
-                {/* <input
-                  style={{ maxWidth: "120px" }}
-                  onChange={onChange}
-                  type="button"
-                  name="nodeUrl"
-                  id="nodeUrl"
-                  height="80px"
-                  value={isSaving ? "Saving..." : "Save"}
-                  onClick={handleSubmit}
-                /> */}
-
-                <button onClick={handleSubmit}>
-                  {isSaving ? "Saving..." : "Save"}
+                <button onClick={handleUpdateNodeUrl}>
+                  {isSaving ? "Updating..." : "Update"}
                 </button>
                 <button onClick={() => setUpdateUrl(false)}>Cancel</button>
               </div>
