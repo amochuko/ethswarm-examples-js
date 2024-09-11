@@ -91,10 +91,6 @@ const CreatePostageStamp = (props: { avaliablePostBatch: number }) => {
   const estimatedAmountForTTL = () => {
     // Estimating `amount` needed for desired TTL
     const secsPerDay = 24 * 60 * 60;
-
-    const t = Utils.getAmountForTtl(secsPerDay);
-    // console.log("t: ", t);
-
     const storageTimeInSeconds = Number(postageData.numOfDays) * secsPerDay;
 
     const amount =
@@ -238,7 +234,14 @@ const CreatePostageStamp = (props: { avaliablePostBatch: number }) => {
           </div>
 
           <div className="row">
-            <button>{creatingPostageBatch ? "Processing..." : "Buy"}</button>
+            <button
+              disabled={creatingPostageBatch}
+              style={{
+                cursor: `${creatingPostageBatch ? "not-allowed" : "pointer"}`,
+              }}
+            >
+              {creatingPostageBatch ? "Processing..." : "Buy"}
+            </button>
             <button
               onClick={() => {
                 setIsRequired(false);
@@ -254,8 +257,7 @@ const CreatePostageStamp = (props: { avaliablePostBatch: number }) => {
               Cancel
             </button>
           </div>
-
-          {newlyCreatedStampId == "" && errorCreatingPostageBatch.hasError && (
+          {!newlyCreatedStampId && errorCreatingPostageBatch.hasError && (
             <div aria-describedby="error">
               <p className="error">
                 <span>Error Creating Postage:</span>
