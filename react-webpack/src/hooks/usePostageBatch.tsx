@@ -15,7 +15,7 @@ export interface BuyPostageBatchArgs {
 export function usePostageBatch() {
   const bee = useContext(BeeContext);
 
-  const [postageBatches, setPostageBatch] = useState<PostageBatch[]>();
+  const [postageBatches, setPostageBatch] = useState<PostageBatch[]>([]);
   const [isLoadingPostageBatch, setIsLoadingStamps] = useState(false);
   const [creatingPostageBatch, setCreatingPostageBatch] = useState(false);
   const [errorCreatingPostageBatch, setErrorCreatingPostageBatch] = useState({
