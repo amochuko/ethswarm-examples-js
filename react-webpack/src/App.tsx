@@ -8,14 +8,19 @@ import utils from "./utils";
 export default function App() {
   const [bee, setBee] = useState<Bee>();
   const [cnxError, setCnxError] = useState("");
+  const [nodeIsConfigured, setNodeIsConfigured] = useState(false);
   const [nodeUrl, setNodeUrl] = useState("");
   const [savingUrl, setSavingUrl] = useState(false);
   const [alive, setAlive] = useState(false);
 
   useEffect(() => {
-    const url = utils.getBeeNodeUrl();
-    if (url) {
+    try {
+      const url = utils.getBeeNodeUrl();
       setBee(new Bee(url));
+      setNodeIsConfigured(true);
+    } catch (err: any) {
+      console.error(err);
+      setNodeIsConfigured(false);
     }
   }, [nodeUrl]);
 
@@ -26,6 +31,7 @@ export default function App() {
         setAlive(true);
       })
       .catch((err) => {
+        console.error(err);
         setCnxError(err);
       });
   }, [bee, alive]);
@@ -44,11 +50,13 @@ export default function App() {
 
   return (
     <>
-      {bee ? (
+      {bee && (
         <BeeContext.Provider value={bee}>
           <Home />
         </BeeContext.Provider>
-      ) : (
+      )}
+
+      {!nodeIsConfigured && bee === undefined && (
         <div className="app-container">
           <div className="app-container-chaid">
             <h1>Set up URL to Bee Node</h1>
