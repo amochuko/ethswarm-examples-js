@@ -209,15 +209,11 @@ const getBeeNodeUrl = () => {
 };
 
 const setBeeNodeUrl = (url: string) => {
-  if (!getBeeNodeUrl()) {
-    localStorage.setItem(BEE_NODE_URL, url);
-  }
+  localStorage.setItem(BEE_NODE_URL, url);
 };
 
 const updateBeeNodeUrl = (url: string) => {
-  if (getBeeNodeUrl()) {
-    localStorage.setItem(BEE_NODE_URL, url);
-  }
+  localStorage.setItem(BEE_NODE_URL, url);
 };
 
 const clearNodeUrl = (beeNodeUrl: string) => {
