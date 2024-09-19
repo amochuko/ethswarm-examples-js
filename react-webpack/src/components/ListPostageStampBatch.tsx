@@ -30,7 +30,7 @@ export default function ListPostageStampsBatch() {
     <>
       {nodeHealth?.status === "ok" && (
         <>
-          <CreatePostageStamp avaliablePostBatch={postageBatches!.length} />
+          <CreatePostageStamp avaliablePostBatch={postageBatches.length} />
           {getAllPostageError && (
             <div className="row">
               <p className="error">Error fetching Postage stamps!</p>
