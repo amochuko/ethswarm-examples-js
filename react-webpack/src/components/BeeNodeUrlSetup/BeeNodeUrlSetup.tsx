@@ -56,7 +56,7 @@ export default function BeeNodeUrlSetup() {
       {healthError && (
         <p style={{ textAlign: "center", fontWeight: 500 }}>
           <span className="error" style={{ fontSize: "1.25rem" }}>
-            {healthError === "ERR_NETWORK" && "Error with the network..."}
+            {healthError === "ERR_NETWORK" && "Error with the network: Check if Bee Node is running..."}
           </span>
         </p>
       )}
